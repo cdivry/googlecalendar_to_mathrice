@@ -13,5 +13,5 @@ Export des calendriers/evenements Google Calendar aux formats Mathrice (JSON et 
 * `./google_to_mathrice.py`
 
 # informations :
-Plateforme Mathrice :
+Plateforme Mathrice (agenda CNRS des evenements mathematiques) :
 https://portail.math.cnrs.fr/agenda

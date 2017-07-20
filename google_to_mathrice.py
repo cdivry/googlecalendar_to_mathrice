@@ -4,6 +4,10 @@
 # source env/bin/activate
 # pip install --upgrade google-api-python-client icalendar django unidecode
 
+##########################################
+#                 IMPORT                 #
+##########################################
+
 from oauth2client.service_account import ServiceAccountCredentials
 from httplib2 import Http
 from apiclient.discovery import build
@@ -14,42 +18,12 @@ import time
 from unidecode import unidecode
 import json
 
+
+##########################################
+#       GOOGLE CALENDAR API CONFIG       #
+##########################################
+
 LABORATORY_NAME = "LPSM"
-
-__all__ = (
-    'MathriceFeed',
-    'DefaultFeed',
-)
-
-FEED_FIELD_MAP = (
-    ('product_id',          'prodid'),
-    ('method',              'method'),
-    ('title',               'x-wr-calname'),
-    ('description',         'x-wr-caldesc'),
-    ('timezone',            'x-wr-timezone'),
-    ('ttl',                 'x-published-ttl'),
-)
-
-ITEM_EVENT_FIELD_MAP = (
-    # PARAM              -> ICS FIELD
-    ('unique_id',           'uid'),
-    ('summary',               'summary'),
-    ('description',         'description'),
-    ('start_datetime',      'dtstart'),
-    ('end_datetime',        'dtend'),
-    ('updateddate',         'last-modified'),
-    ('created',             'created'),
-    ('timestamp',           'dtstamp'),
-    ('transparency',        'transp'),
-    ('location',            'location'),
-    ('geolocation',         'geo'),
-    ('link',                'url'),
-    ('organizer',           'organizer'),
-    ('attendee',            'attendee'),
-    ('status',              'status'),
-    ('method',              'method'),
-)
-
 
 class MathriceFeed(SyndicationFeed):
 
@@ -82,47 +56,10 @@ class MathriceFeed(SyndicationFeed):
 
 DefaultFeed = MathriceFeed
 
-# laboratoire.psm@gmail.com
 
-#from pprint import pprint
-
-"""
-CALENDAR_ID = "laboratoire.psm@gmail.com"
-CALENDAR_URL= "https://calendar.google.com/calendar/embed?src=laboratoire.psm%40gmail.com&ctz=Europe/Paris"
-
-event = {
-      "summary": "TITRE DE L'EVENEMENT",
-      "location": "LPSM - 4 place Jussieu, 75005 Paris, FRANCE",
-      "description": "Evenement de test.",
-      "start": {
-              "dateTime": "2017-07-21T09:00:00-07:00",
-              "timeZone": "Europe/Paris"
-      },
-      "end": {
-              "dateTime": "2017-07-21T17:00:00-07:00",
-              "timeZone": "Europe/Paris"
-      },
-      "attendees": [
-              {
-                  "displayName": "Intervenant #1",
-                  "email": "intervenant1@example.com"
-              },
-              {
-                  "displayName": "Intervenant #2",
-                  "email": "intervenant2@example.com"
-              },
-      ],
-      "reminders": {
-              "useDefault": False,
-              "overrides": [
-                        {"method": "email", "minutes": 1440 },
-                        {"method": "popup", "minutes": 10 }
-              ]
-      }
-}
-"""
-
-
+##########################################
+#       GOOGLE CALENDAR API CONFIG       #
+##########################################
 
 scopes = ["https://www.googleapis.com/auth/calendar"]
 credentials = ServiceAccountCredentials.from_json_keyfile_name(
@@ -130,6 +67,10 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name(
 http_auth = credentials.authorize(Http())
 service = build("calendar", "v3", credentials=credentials)
 
+
+##########################################
+#       GOOGLE CALENDAR API QUERIES      #
+##########################################
 
 def calendar_create(calendar_summary):
     calendar = {
@@ -143,8 +84,6 @@ def calendar_list():
     page_token = None
     while True:
         calendar_list = service.calendarList().list(pageToken=page_token).execute()
-        #for calendar_list_entry in calendar_list['items']:
-        #    print(calendar_list_entry['summary'])
         page_token = calendar_list.get('nextPageToken')
         if not page_token:
             break
@@ -163,28 +102,24 @@ def event_list(calendar_id):
     page_token = None
     while True:
         events = service.events().list(calendarId=calendar_id, pageToken=page_token).execute()
-        #for event in events["items"]:
-            #pprint(event["summary"])
-            #pprint("du " + event['start']['dateTime'] + " au " + event['end']['dateTime'])
-            #pprint(event["description"])
-            #pprint("")
-            #print(event)
         page_token = events.get("nextPageToken")
         if not page_token:
             break
     return (events["items"])
 
 
+##########################################
+#           JSON / ICS FILES             #
+##########################################
+
 def ics_add_event(feed, event):
 
     start = str(event['start']['dateTime']).split('T')
     start = start[0].split('-') + start[1].split(':')
-
     start = datetime.datetime(int(start[0]), int(start[1]), int(start[2]), int(start[3]), int(start[4]))
     end = str(event['end']['dateTime']).split('T')
     end = end[0].split('-') + end[1].split(':')
     end = datetime.datetime(int(end[0]), int(end[1]), int(end[2]), int(end[3]), int(end[4]))
-
 
     feed.add_item(
         unique_id=str(str(time.time()) + '-EVENT#' + str(event['id']) + '-@'+  LABORATORY_NAME),
@@ -264,7 +199,9 @@ def json_create(fichier, sem_id, title, url, desc, lang, events):
     fd.close()
     print("Fichier '" + fichier + "' genere (" + str(len(events)) + " events).")
 
-
+##########################################
+#            EXPORT MATHRICE             #
+##########################################
 
 def mathrice():
     calendars = calendar_list()
@@ -287,7 +224,9 @@ def mathrice():
                     u"fr",
                     events)
 
+##########################################
+#               ENTRY POINT              #
+##########################################
 
 if __name__ == '__main__':
-
     mathrice()
