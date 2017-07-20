@@ -222,7 +222,7 @@ def ics_create(fichier, title, url, desc, lang, events):
         fd = open(unidecode(fichier), 'wb')
         feed.write(fd, 'utf-8')
         fd.close()
-    print("Fichier '" + fichier + "' genere (" + str(len(events)) + " events).")
+    print("Fichier '" + fichier + "' généré (" + str(len(events)) + " events).")
 
 def json_create(fichier, sem_id, title, url, desc, lang, events):
     feed = {}
@@ -245,7 +245,7 @@ def json_create(fichier, sem_id, title, url, desc, lang, events):
     fd = open(unidecode(fichier), 'wb')
     fd.write(tmp)
     fd.close()
-    print("Fichier '" + fichier + "' genere (" + str(len(events)) + " events).")
+    print("Fichier '" + fichier + "' généré (" + str(len(events)) + " events).")
 
 ##########################################
 #            EXPORT MATHRICE             #
