@@ -20,10 +20,40 @@ import json
 
 
 ##########################################
-#       GOOGLE CALENDAR API CONFIG       #
+#       ICALENDAR CREATION CONFIG        #
 ##########################################
 
 LABORATORY_NAME = "LPSM"
+
+FEED_FIELD_MAP = (
+    ('product_id',          'prodid'),
+    ('method',              'method'),
+    ('title',               'x-wr-calname'),
+    ('description',         'x-wr-caldesc'),
+    ('timezone',            'x-wr-timezone'),
+    ('ttl',                 'x-published-ttl'),
+)
+
+ITEM_EVENT_FIELD_MAP = (
+    # PARAM              -> ICS FIELD
+    ('unique_id',           'uid'),
+    ('summary',             'summary'),
+    ('description',         'description'),
+    ('start_datetime',      'dtstart'),
+    ('end_datetime',        'dtend'),
+    ('updateddate',         'last-modified'),
+    ('created',             'created'),
+    ('timestamp',           'dtstamp'),
+    ('transparency',        'transp'),
+    ('location',            'location'),
+    ('geolocation',         'geo'),
+    ('link',                'url'),
+    ('organizer',           'organizer'),
+    ('attendee',            'attendee'),
+    ('status',              'status'),
+    ('method',              'method'),
+)
+
 
 class MathriceFeed(SyndicationFeed):
 
@@ -121,6 +151,15 @@ def ics_add_event(feed, event):
     end = end[0].split('-') + end[1].split(':')
     end = datetime.datetime(int(end[0]), int(end[1]), int(end[2]), int(end[3]), int(end[4]))
 
+    organizer = ""
+    if 'email' in event['organizer']:
+        organizer += event['organizer']['email'] + " "
+
+    attendees = ""
+    for interv in event['attendees']:
+        if ('displayName' in interv):
+            attendees += interv['displayName'] + " "
+
     feed.add_item(
         unique_id=str(str(time.time()) + '-EVENT#' + str(event['id']) + '-@'+  LABORATORY_NAME),
         title=str(event['summary']),
@@ -128,8 +167,8 @@ def ics_add_event(feed, event):
         description=str(event['description']),
         status=str(event['status']).upper(),
         location=str(event['location']),
-        organizer=str(event['organizer']),
-        attendee=str(event['attendees']),
+        organizer=str(organizer),
+        attendee=attendees,
         timestamp=start,
         start_datetime=start,
         end_datetime=end,
@@ -137,6 +176,15 @@ def ics_add_event(feed, event):
     return (feed)
 
 def json_add_event(event):
+    organizer = ""
+    if 'email' in event['organizer']:
+        organizer += event['organizer']['email'] + " "
+
+    attendees = ""
+    for interv in event['attendees']:
+        if ('displayName' in interv):
+            attendees += interv['displayName'] + " "
+
     new_event = {
         "id"        : event['id'],
         "startDate" : {
@@ -153,8 +201,8 @@ def json_add_event(event):
         "chairs":
         {
             "id": 1,
-            "fullName": event['attendees'],
-            "affiliation": event['organizer']
+            "fullName": attendees,
+            "affiliation": organizer
         },
         "url": event['htmlLink'],
         "location": event['location'],
