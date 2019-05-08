@@ -1,4 +1,4 @@
-Django==1.11.18
+Django>=1.11.19
 google-api-python-client==1.6.2
 httplib2==0.10.3
 icalendar==3.11.5
